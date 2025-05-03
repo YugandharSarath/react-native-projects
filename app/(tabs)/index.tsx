@@ -1,75 +1,187 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
+import React, { useState } from "react";
+import {
+  Button,
+  Modal,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
-import { HelloWave } from '@/components/HelloWave';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
+// Define the Note type
+type Note = {
+  id: number;
+  title: string;
+  content: string;
+};
 
-export default function HomeScreen() {
+const App: React.FC = () => {
+  const [notes, setNotes] = useState<Note[]>([]);
+  const [selectedNote, setSelectedNote] = useState<Note | null>(null);
+  const [title, setTitle] = useState<string>("");
+  const [content, setContent] = useState<string>("");
+  const [modalVisible, setModalVisible] = useState<boolean>(false);
+
+  const handleSaveNote = () => {
+    if (selectedNote) {
+      const updatedNotes = notes.map((note) =>
+        note.id === selectedNote.id ? { ...note, title, content } : note
+      );
+      setNotes(updatedNotes);
+      setSelectedNote(null);
+    } else {
+      const newNote: Note = {
+        id: Date.now(),
+        title,
+        content,
+      };
+      setNotes([...notes, newNote]);
+    }
+    setTitle("");
+    setContent("");
+    setModalVisible(false);
+  };
+
+
+  const handleEditNote = (note: Note) => {
+    setSelectedNote(note);
+    setTitle(note.title);
+    setContent(note.content);
+    setModalVisible(true);
+  };
+
+
+  const handleDeleteNote = (note: Note) => {
+    const updatedNotes = notes.filter((item) => item.id !== note.id);
+    setNotes(updatedNotes);
+    setSelectedNote(null);
+    setModalVisible(false);
+  };
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+    <View style={styles.container}>
+      <Text style={styles.title}>My Notes</Text>
+
+      <ScrollView style={styles.noteList}>
+        {notes.map((note) => (
+          <TouchableOpacity key={note.id} onPress={() => handleEditNote(note)}>
+            <Text style={styles.noteTitle}>{note.title}</Text>
+          </TouchableOpacity>
+        ))}
+      </ScrollView>
+
+      <TouchableOpacity
+        style={styles.addButton}
+        onPress={() => {
+          setTitle("");
+          setContent("");
+          setSelectedNote(null);
+          setModalVisible(true);
+        }}
+      >
+        <Text style={styles.addButtonText}>Add Note</Text>
+      </TouchableOpacity>
+
+      <Modal visible={modalVisible} animationType="slide" transparent={false}>
+        <View style={styles.modalContainer}>
+          <TextInput
+            style={styles.input}
+            placeholder="Enter note title"
+            value={title}
+            onChangeText={setTitle}
+          />
+
+          <TextInput
+            style={styles.contentInput}
+            multiline
+            placeholder="Enter note content"
+            value={content}
+            onChangeText={setContent}
+          />
+
+          <View style={styles.buttonContainer}>
+            <Button title="Save" onPress={handleSaveNote} color="#007BFF" />
+            <Button title="Cancel" onPress={() => setModalVisible(false)} color="#FF3B30" />
+            {selectedNote && (
+              <Button
+                title="Delete"
+                onPress={() => handleDeleteNote(selectedNote)}
+                color="#FF9500"
+              />
+            )}
+          </View>
+        </View>
+      </Modal>
+    </View>
   );
-}
+};
 
 const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
+  container: {
+    flex: 1,
+    padding: 40,
+    backgroundColor: "#e6e6e6",
   },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
+  title: {
+    fontSize: 24,
+    fontWeight: "bold",
+    marginBottom: 10,
+    color: "#333",
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
+  noteList: {
+    flex: 1,
+  },
+  noteTitle: {
+    fontSize: 15,
+    marginBottom: 10,
+    fontWeight: "bold",
+    color: "black",
+    backgroundColor: "white",
+    height: 40,
+    width: "100%",
+    padding: 10,
+    borderRadius: 8,
+  },
+  addButton: {
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#007BFF",
+    paddingVertical: 12,
+    borderRadius: 5,
+    marginTop: 10,
+  },
+  addButtonText: {
+    color: "white",
+    fontSize: 16,
+    fontWeight: "bold",
+  },
+  modalContainer: {
+    flex: 1,
+    padding: 50,
+    backgroundColor: "white",
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: "#E0E0E0",
+    padding: 10,
+    marginBottom: 10,
+    borderRadius: 5,
+  },
+  contentInput: {
+    borderWidth: 1,
+    borderColor: "#E0E0E0",
+    padding: 10,
+    marginBottom: 20,
+    borderRadius: 5,
+    height: 150,
+    textAlignVertical: "top",
+  },
+  buttonContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
   },
 });
+
+export default App;
