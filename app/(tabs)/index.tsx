@@ -1,75 +1,114 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
+import React, { useState } from 'react';
+import {
+  StyleSheet,
+  Text, TextInput, TouchableOpacity,
+  View
+} from 'react-native';
+import QRCode from 'react-native-qrcode-svg';
 
-import { HelloWave } from '@/components/HelloWave';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
+export default function QRCodeGenerator() { 
+	const [qrValue, setQRValue] = useState(''); 
+	const [isActive, setIsActive] = useState(false); 
 
-export default function HomeScreen() {
-  return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
-  );
-}
+	const generateQRCode = () => { 
+		if (!qrValue) return; 
 
-const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
-  },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
-  },
+		setIsActive(true); 
+	}; 
+
+	const handleInputChange = (text) => { 
+		setQRValue(text); 
+
+		if (!text) { 
+			setIsActive(false); 
+		} 
+	}; 
+
+	return ( 
+		<View style={styles.container}> 
+			<View style={styles.wrapper}> 
+				<Text style={styles.title}> 
+					QR Code Generator 
+				</Text> 
+				<Text style={styles.description}> 
+					Paste a URL or enter text to create a QR code 
+				</Text> 
+				<TextInput 
+					style={styles.input} 
+					placeholder="Enter text or URL"
+					value={qrValue} 
+					onChangeText={handleInputChange} 
+				/> 
+				<TouchableOpacity 
+					style={styles.button} 
+					onPress={generateQRCode} 
+				> 
+					<Text style={styles.buttonText}> 
+						Generate QR Code 
+					</Text> 
+				</TouchableOpacity> 
+				{isActive && ( 
+					<View style={styles.qrCode}> 
+						<QRCode 
+							value={qrValue} 
+							size={200} 
+							color="black"
+							backgroundColor="white"
+						/> 
+					</View> 
+				)} 
+			</View> 
+		</View> 
+	); 
+} 
+
+const styles = StyleSheet.create({ 
+	container: { 
+		flex: 1, 
+		justifyContent: 'center', 
+		alignItems: 'center', 
+		backgroundColor: '#eee', 
+	}, 
+	wrapper: { 
+		maxWidth: 300, 
+		backgroundColor: '#fff', 
+		borderRadius: 7, 
+		padding: 20, 
+		shadowColor: 'rgba(0, 0, 0, 0.1)', 
+		shadowOffset: { width: 0, height: 10 }, 
+		shadowOpacity: 1, 
+		shadowRadius: 30, 
+	}, 
+	title: { 
+		fontSize: 21, 
+		fontWeight: '500', 
+		marginBottom: 10, 
+	}, 
+	description: { 
+		color: '#575757', 
+		fontSize: 16, 
+		marginBottom: 20, 
+	}, 
+	input: { 
+		fontSize: 18, 
+		padding: 17, 
+		borderWidth: 1, 
+		borderColor: '#999', 
+		borderRadius: 5, 
+		marginBottom: 20, 
+	}, 
+	button: { 
+		backgroundColor: '#3498DB', 
+		borderRadius: 5, 
+		padding: 15, 
+		alignItems: 'center', 
+	}, 
+	buttonText: { 
+		color: '#fff', 
+		fontSize: 18, 
+	}, 
+	qrCode: { 
+		marginTop: 20, 
+		alignItems: 'center', 
+	}, 
 });
