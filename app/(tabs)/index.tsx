@@ -16,7 +16,7 @@ export default function QRCodeGenerator() {
 		setIsActive(true); 
 	}; 
 
-	const handleInputChange = (text) => { 
+	const handleInputChange = (text: any) => { 
 		setQRValue(text); 
 
 		if (!text) { 
